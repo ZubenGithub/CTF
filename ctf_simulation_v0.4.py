@@ -20,7 +20,7 @@ parser.add_argument(
 parser.add_argument(
                         '-kV',
                         '--voltage',
-                         default=(200),
+                         default=(300),
                         type=int,
                         help='In kV.',
                         required=False
@@ -51,9 +51,9 @@ parser.add_argument(
 parser.add_argument(
                         '-def', 
                         '--defocus',
-                        default=(25000),
+                        default=(1),
                         type=float,
-                        help='This should be in Angstroms',
+                        help='The defocus value in micrometers. Positive for underfocus after Heymann et al. (2005)',
                         required=False
                     )
 parser.add_argument(
@@ -100,7 +100,7 @@ max_spatial_freq=args.spatial_frequency     # Something to set where the maximum
 amplitude_contrast=args.amp_contrast        # Allows me to play around with the amp contrast
 B_factor=args.envelope_function             # Sets the envelope B-factor
 Cs=(args.Spherical_aberration)*1000*1000*10 # The Cs. Converts from mm to Angstroms
-defocus=args.defocus                        # Gets the defocus (currently input as Angstroms)
+defocus=args.defocus*1000*10                # Gets the defocus (input as micrometers so convert to Angstroms).
 save=args.save
 Zhu=args.Zhu                                # Use the equations from Zhu et al. 1997 instead
 flip=args.flip                              # Flip phases
@@ -158,7 +158,14 @@ else:
     pass
 
 #plt.legend(title="B-factor")
-plt.title("CTF for: \n {0}kV, A={1}, B={2}, Cs={3}, {4} defocus".format(args.voltage, amplitude_contrast, B_factor, args.Spherical_aberration, defocus))
+plt.title("CTF for: \n {0}kV, A={1}, B={2}, Cs={3}, {4} defocus".format(
+                                                                        args.voltage,
+                                                                        amplitude_contrast,
+                                                                        B_factor,
+                                                                        args.Spherical_aberration,
+                                                                        defocus/10000
+                                                                        )
+         )
 
 #ax.axis([min(k),max(k),-1,1])
 ax.set_xlabel("Spatial frequency (k)", fontsize=15)
@@ -168,8 +175,23 @@ plt.grid()
 
 scherzer=1.2*np.sqrt(Cs*relativistic_lambda)
 print("The Scherzer defocus for these parameters is: {0:.2f} Angstroms".format(scherzer))
-
+print(
+"""
+The settings used are:
+{0} kV
+{1} amplitude contrast
+{2} B-factor
+{3} Cs
+{4} Defocus (micrometers)
+""".format(kvoltage/1000, amplitude_contrast, B_factor,Cs/10000000, defocus/10000)
+    )
 if args.save:
-    plt.savefig("{0}_{1}kV_{2}A_{3}B_{4}Cs_{5}defocus.png".format(save, args.voltage, amplitude_contrast,B_factor, args.Spherical_aberration, defocus))
+    plt.savefig("{0}_{1}kV_{2}A_{3}B_{4}Cs_{5}defocus.png".format(
+                                                                    save,
+                                                                    args.voltage,
+                                                                    amplitude_contrast,B_factor,
+                                                                    args.Spherical_aberration,
+                                                                    defocus/10000)
+                                                                    )
 else:
     plt.show()
